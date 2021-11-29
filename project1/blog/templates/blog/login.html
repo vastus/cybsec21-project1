@@ -1,16 +1,39 @@
+{% extends "blog/layout.html" %}
+
+{% block content %}
 <div>
   <h1>Login</h1>
 
-  <form method="POST" action="/login">
-    {% csrf_token %}
+  <p>
+  Don't have an account? Please, <a href="{% url 'register' %}">register</a>.
+  </p>
 
-    <div>
-      <label for="login__email">Email</label><br />
-      <input id="login__email" name="login_email" type="email" />
-    </div>
+  {% if failure %}
+  <div class="errors">
+    <h2>Errors</h2>
+    <p>{{ failure|capfirst }}</p>
+  </div>
+  {% endif %}
 
-    <div>
-      <input type="submit" value="Login" />
-    </div>
-  </form>
+  <fieldset>
+    <legend>Log in to use your powers</legend>
+    <form method="POST" action="/login">
+      {% csrf_token %}
+
+      <div class="field">
+        <label for="login__email">Email</label><br />
+        <input id="login__email" name="login_email" type="email" />
+      </div>
+
+      <div class="field">
+        <label for="login__password">Password</label><br />
+        <input id="login__password" name="login_password" type="password" />
+      </div>
+
+      <div>
+        <input type="submit" value="Log in" />
+      </div>
+    </form>
+  </fieldset>
 </div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "blog/layout.html" %}
+
+{% block content %}
+<div>
+  <h1>Register</h1>
+
+  <p>
+  Already registered? <a href="{% url 'login' %}">Log in</a> instead.
+  </p>
+
+  {% if failure %}
+  <div>
+    <h2>Errors</h2>
+    <p>{{ failure|capfirst }}</p>
+  </div>
+  {% endif %}
+
+  <fieldset>
+    <legend>Register for more goodies</legend>
+
+    <form method="POST" action="/register">
+      {% csrf_token %}
+
+      <div class="field">
+        <label for="registration__email">Email</label><br />
+        <input id="registration__email" name="registration_email" type="email" />
+      </div>
+
+      <div class="field">
+        <label for="registration__password">Password</label><br />
+        <input id="registration__password" name="registration_password" type="password" />
+      </div>
+
+      <div>
+        <input type="submit" value="Register" />
+      </div>
+    </form>
+  </fieldset>
+</div>
+{% endblock %}
