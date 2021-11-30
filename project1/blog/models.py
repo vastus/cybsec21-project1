@@ -6,15 +6,17 @@ from django.core.validators import MinLengthValidator
 from django.db import models
 from django.forms import ModelForm
 
+AUTHOR = 0b0010
+ADMIN = 0b1111
+
 
 def encrypt_password(password: str, salt: bytes):
-    return hashlib.scrypt(
-        bytes(password, "utf-8"), salt=salt, n=128, r=1024, p=32
-    )
+    return hashlib.scrypt(bytes(password, "utf-8"), salt=salt, n=128, r=1024, p=16)
 
 
 class User(models.Model):
     email = models.CharField(max_length=256)
+    role = models.PositiveIntegerField(null=False, default=0)
     password_hash = models.BinaryField(null=False)
     password_salt = models.BinaryField(null=False)
 
@@ -23,8 +25,8 @@ class User(models.Model):
         return {field: getattr(self, field) for field in fields}
 
     @property
-    def loggedin(self):
-        return True
+    def is_author(self):
+        return (self.role & AUTHOR) != 0
 
     @classmethod
     def authenticate(cls, email, password):
@@ -62,9 +64,10 @@ class User(models.Model):
 class Post(models.Model):
     title = models.TextField(null=False)
     content = models.TextField(null=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
 
 class PostForm(ModelForm):
     class Meta:
         model = Post
-        fields = ["title", "content"]
+        fields = ["title", "content", "user"]

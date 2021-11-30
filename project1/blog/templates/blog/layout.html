@@ -1,4 +1,4 @@
-{% load static utils %}
+{% load blog_utils %}
 <!doctype html>
 <html>
   <head>
@@ -14,16 +14,20 @@
 
     <nav>
       {% if current_user %}
-      <p>
-      {{ current_user.email }}
-      </p>
+        <p>
+        {{ current_user.email }}
+        </p>
       {% endif %}
+
       <ul>
         {% if current_user %}
-        <li><a href="{% url 'logout' %}">Log out</a></li>
+          {% if current_user.is_author %}
+            <li><a href="{% url 'new_post' %}">New post</a></li>
+          {% endif %}
+          <li><a href="{% url 'logout' %}">Log out</a></li>
         {% else %}
-        <li><a href="{% url 'login' %}">Log in</a></li>
-        <li><a href="{% url 'register' %}">Register</a></li>
+          <li><a href="{% url 'login' %}">Log in</a></li>
+          <li><a href="{% url 'register' %}">Register</a></li>
         {% endif %}
       </ul>
     </nav>

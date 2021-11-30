@@ -5,17 +5,23 @@
 <div>
   <h1>Write a post</h1>
 
+  {% if messages %}
+      {% for message in messages %}
+          {{ message|capfirst }}
+      {% endfor %}
+  {% endif %}
+
   <form method="POST" action="/posts">
     {% csrf_token %}
 
     <div class="field">
       <label for="post__title">Title</label><br />
-      <input id="post__title" type="text" name="post_title" size=77 />
+      <input id="post__title" type="text" name="title" size=77 />
     </div>
 
     <div class="field">
       <label for="post__content">Content</label><br />
-      <textarea id="post__content" name="post_content" cols=80 rows=24>
+      <textarea id="post__content" name="content" cols=80 rows=24>
       </textarea>
     </div>
 
