@@ -20,6 +20,7 @@
       {% endif %}
 
       <ul>
+        <li><a href="{% url 'index' %}">Home</a></li>
         {% if current_user %}
           {% if current_user.is_author %}
             <li><a href="{% url 'new_post' %}">New post</a></li>

@@ -1,0 +1,18 @@
+{% extends "blog/layout.html" %}
+
+{% block content %}
+<div>
+  <div class="post_title">
+    <h1>{{ post.title }}</h1>
+  </div>
+
+    <div class="post-meta">
+      by {{ post.user.email }}
+    </div>
+
+  <div class="post_content">
+    {{ post.content }}
+  </div>
+</div>
+{% endblock %}
+

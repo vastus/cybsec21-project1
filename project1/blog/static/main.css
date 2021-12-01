@@ -32,3 +32,13 @@ header h1 a {
 header h1 a:hover {
   text-decoration: underline;
 }
+
+.post-meta {
+  font-style: italic;
+  margin-bottom: 1rem;
+}
+
+.post-listing .post {
+  padding-bottom: 2rem;
+  border-bottom: 1px solid rgba(1, 1, 1, .15);
+}

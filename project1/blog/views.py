@@ -4,7 +4,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
-from .models import PostForm, User
+from .models import Post, PostForm, User
 
 CURRENT_USER_ID = "current_user_id"
 
@@ -18,7 +18,8 @@ def _render(request: HttpRequest, templ: str, context: dict = {}):
 
 @require_http_methods(["GET"])
 def index(request: HttpRequest):
-    return _render(request, "blog/index.html")
+    posts = Post.objects.all()
+    return _render(request, "blog/index.html", {"posts": posts})
 
 
 @require_http_methods(["GET", "POST"])
@@ -79,17 +80,18 @@ def new_post(request: HttpRequest):
 
 @require_http_methods(["POST"])
 def create_post(request: HttpRequest):
-    # title = request.POST["post_title"]
-    # content = request.POST["post_content"]
+    title = request.POST["title"]
+    content = request.POST["content"]
     # import pdb; pdb.set_trace()
-    form = PostForm({**request.POST, 'user': request.current_user})#, "user": request.current_user})
-    if not form.is_valid():
-        messages.error(request, form.errors)
-        return _render(request, "blog/posts/new.html")
-    post = form.save()
-    return redirect(reverse("show_post", args=[post.id]))
+    form = PostForm({"title": title, "content": content, "user": request.current_user})
+    if form.is_valid():
+        post = form.save()
+        return redirect(reverse("show_post", args=[post.id]))
+    messages.error(request, form.errors)
+    return _render(request, "blog/posts/new.html")
 
 
 @require_http_methods(["GET"])
 def show_post(request: HttpRequest, post_id: int):
-    return HttpResponse(f"post_id={post_id}")
+    post = Post.objects.get(pk=post_id)
+    return _render(request, "blog/posts/show.html", {"post": post})
