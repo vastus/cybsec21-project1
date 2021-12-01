@@ -1,3 +1,6 @@
+from random import randint
+from typing import Optional
+
 from django.core.management.base import BaseCommand, CommandError
 from faker import Faker
 
@@ -15,13 +18,13 @@ class Command(BaseCommand):
         testos_email = "testos@teroni"
 
         users = (
-            (admin_email, "AdminPass99"),
-            (author_email, "AuthorPass99"),
-            (testos_email, "TestosPass99"),
+            ("sudo", admin_email, "AdminPass99"),
+            ("Jo Nesbo", author_email, "AuthorPass99"),
+            ("Testos Teroni", testos_email, "TestosPass99"),
         )
 
-        for email, password in users:
-            ok, err = User.register(email, password)
+        for username, email, password in users:
+            ok, err = User.register(username, email, password)
             if not ok:
                 raise CommandError(err)
 
@@ -44,10 +47,22 @@ class Command(BaseCommand):
             post.full_clean()
             post.save()
 
-        # comments
+        for post in Post.objects.all():
+            gen_comments(post)
 
 
 def content(num_paras=8):
     return " ".join(fake.paragraphs(num_paras))
 
 
+def gen_comments(post: Post, amount_range=(1,17)):
+    for _ in range(randint(*amount_range)):
+        email = fake.email()
+        ok, err = User.register(
+            username=fake.user_name(), email=email, password=fake.password()
+        )
+        if not ok:
+            raise CommandError(err)
+        user = User.objects.get(email=email)
+        body = ' '.join(fake.sentences(randint(1, 11)))
+        Comment.objects.create(post=post, user=user, body=body)

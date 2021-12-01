@@ -15,6 +15,7 @@ def encrypt_password(password: str, salt: bytes):
 
 
 class User(models.Model):
+    username = models.CharField(max_length=64)
     email = models.CharField(max_length=256)
     role = models.PositiveIntegerField(null=False, default=0)
     password_hash = models.BinaryField(null=False)
@@ -42,14 +43,20 @@ class User(models.Model):
         return user, ""
 
     @classmethod
-    def register(cls, email, password):
+    def register(cls, username, email, password):
         user = cls.objects.filter(email=email).first()
         if user:
-            return False, "email already in use"
+            return False, "username/email already in use"
+        user = cls.objects.filter(username=username).first()
+        if user:
+            return False, "username/email already in use"
         password_salt = os.urandom(128)
         password_hash = encrypt_password(password, password_salt)
         user = User(
-            email=email, password_hash=password_hash, password_salt=password_salt
+            username=username,
+            email=email,
+            password_hash=password_hash,
+            password_salt=password_salt,
         )
 
         try:
@@ -71,3 +78,12 @@ class PostForm(ModelForm):
     class Meta:
         model = Post
         fields = ["title", "content", "user"]
+
+
+class Comment(models.Model):
+    body = models.TextField()
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    inserted_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

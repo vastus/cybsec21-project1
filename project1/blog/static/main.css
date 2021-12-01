@@ -42,3 +42,21 @@ header h1 a:hover {
   padding-bottom: 2rem;
   border-bottom: 1px solid rgba(1, 1, 1, .15);
 }
+
+.comment {
+  padding: 1rem;
+  border-bottom: 1px solid rgba(1, 1, 1, .15);
+  margin-bottom: 1rem;
+}
+.comments:first-child {
+  padding-top: 0;
+}
+
+.comment-body {
+  margin-bottom: 1rem;
+}
+
+.comment-meta {
+  font-size: .9rem;
+  font-style: italic;
+}

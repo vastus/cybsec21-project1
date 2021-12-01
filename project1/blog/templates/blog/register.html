@@ -22,6 +22,11 @@
       {% csrf_token %}
 
       <div class="field">
+        <label for="registration__username">Username</label><br />
+        <input id="registration__username" name="registration_username" type="text" />
+      </div>
+
+      <div class="field">
         <label for="registration__email">Email</label><br />
         <input id="registration__email" name="registration_email" type="email" />
       </div>

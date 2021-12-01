@@ -32,7 +32,6 @@ def login(request: HttpRequest):
 
 
 def _handle_login(request: HttpRequest):
-    # import pdb; pdb.set_trace()
     email = request.POST["login_email"]
     password = request.POST["login_password"]
     user, failure = User.authenticate(email, password)
@@ -56,6 +55,7 @@ def register(request: HttpRequest):
 
 
 def _handle_registration(request: HttpRequest):
+    username = request.POST["registration_username"]
     email = request.POST["registration_email"]
     email_confirmation = request.POST["registration_email_confirmation"]
     password = request.POST["registration_password"]
@@ -64,7 +64,7 @@ def _handle_registration(request: HttpRequest):
         context = {"failure": "emails must match"}
         return _render(request, "blog/register.html", context)
 
-    ok, failure = User.register(email, password)
+    ok, failure = User.register(username, email, password)
     if ok:
         return redirect("/login")
     context = {"failure": failure}
@@ -94,4 +94,16 @@ def create_post(request: HttpRequest):
 @require_http_methods(["GET"])
 def show_post(request: HttpRequest, post_id: int):
     post = Post.objects.get(pk=post_id)
-    return _render(request, "blog/posts/show.html", {"post": post})
+    comments = post.comment_set.order_by("-inserted_at").all
+    return _render(
+        request, "blog/posts/show.html", {"post": post, "comments": comments}
+    )
+
+
+@require_http_methods(["POST"])
+def create_comment(request: HttpRequest, post_id: int):
+    post = Post.objects.get(pk=post_id)
+    post.comment_set.create(
+        body=request.POST["comment_body"], user=request.current_user
+    )
+    return redirect(reverse("show_post", args=[post.id]))

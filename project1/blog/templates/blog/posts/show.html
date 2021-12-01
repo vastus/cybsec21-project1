@@ -2,16 +2,74 @@
 
 {% block content %}
 <div>
-  <div class="post_title">
-    <h1>{{ post.title }}</h1>
-  </div>
-
-    <div class="post-meta">
-      by {{ post.user.email }}
+  <article>
+    <div class="post_title">
+      <h1>{{ post.title }}</h1>
     </div>
 
-  <div class="post_content">
-    {{ post.content }}
+    <div class="post-meta">
+      by {{ post.user.username }}
+    </div>
+
+    <div class="post_content">
+      {{ post.content }}
+    </div>
+  </article>
+
+  <div class="comments">
+    <h2>Comments</h2>
+
+    {% if post.comment_set.count < 1 %}
+    <p>No comments, yet.</p>
+    {% endif %}
+
+    {% if current_user %}
+    <fieldset>
+      <legend>Let your voice be heard</legend>
+
+      <form action="{% url 'create_comment' post_id=post.id %}" method="POST">
+        {% csrf_token %}
+
+        <div class="field">
+          <textarea
+            id="comment__body"
+            name="comment_body"
+            cols="78"
+            rows="8"
+            placeholder="Write your commet here..."
+          /></textarea>
+        </div>
+
+        <div class="field">
+          <input type="submit" value="Comment" />
+        </div>
+      </form>
+    </fieldset>
+
+    {% else %}
+
+    <p>
+    After you've <a href="{% url 'login' %}">logged in</a>,
+    you'll be able to participate in the discussion or start one.
+    In case you don't have an account yet you can
+    <a href="{% url 'register' %}">register</a> and get yourself one.
+    </p>
+    {% endif %}
+
+    {% for comment in comments %}
+    <div class="comment">
+      <div class="comment-body">
+        {{ comment.body }}
+      </div>
+
+      <div class="comment-meta">
+        <div class="comment-by">
+          commented by
+          <span class="comment-commenter">{{ comment.user.username }}</span>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
   </div>
 </div>
 {% endblock %}
