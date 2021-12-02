@@ -1,5 +1,6 @@
+from django.db.models import Q
 from django.contrib import messages
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
@@ -21,12 +22,7 @@ def index(request: HttpRequest):
     posts = []
     q = request.GET.get("q")
     if q:
-        sql = f"""
-        select * from blog_post \
-        where title like '%{q}%' \
-        or content like '%{q}%' \
-        """
-        posts = Post.objects.raw(sql)
+        posts = Post.objects.filter(Q(title__contains=q) | Q(content__contains=q))
     else:
         posts = Post.objects.all()
     return _render(request, "blog/index.html", {"posts": posts})
