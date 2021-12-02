@@ -1,3 +1,5 @@
+from textwrap import dedent
+
 from django.contrib import messages
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
@@ -18,7 +20,18 @@ def _render(request: HttpRequest, templ: str, context: dict = {}):
 
 @require_http_methods(["GET"])
 def index(request: HttpRequest):
-    posts = Post.objects.all()
+    posts = []
+    q = request.GET.get('q')
+    if q:
+        sql = dedent(f"""
+        select * from blog_post \
+        where title like '%{q}%' \
+        or content like '%{q}%' \
+        """).strip()
+        posts = Post.objects.raw(sql)
+    else:
+        posts = Post.objects.all()
+    import pdb; pdb.set_trace()
     return _render(request, "blog/index.html", {"posts": posts})
 
 

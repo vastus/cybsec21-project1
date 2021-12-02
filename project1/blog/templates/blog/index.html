@@ -2,6 +2,28 @@
 
 {% block content %}
 <div class="post-listing">
+  {% if not posts %}
+    {% if 'q' in request.GET %}
+    <p>
+    No posts matched query '{{ request.GET.q }}'.
+    <a href="{% url 'index' %}">Clear the search</a>.
+    </p>
+
+    {% else %}
+
+    <p>No posts, yet.</p>
+    {% endif %}
+
+  {% else %}
+
+  {% if request.GET.q %}
+  <p>
+  Showing results for '{{ request.GET.q }}'.
+  Found {{ posts|length  }} post(s).
+  <a href="{% url 'index' %}">Clear the search</a>.
+  </p>
+  {% endif %}
+
   {% for post in posts %}
   <div class="post">
     <div class="post-title">
@@ -17,5 +39,6 @@
     </div>
   </div>
   {% endfor %}
+  {% endif %}
 </div>
 {% endblock %}
