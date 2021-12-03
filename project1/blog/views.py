@@ -114,6 +114,6 @@ def show_post(request: HttpRequest, post_id: int):
 def create_comment(request: HttpRequest, post_id: int):
     post = Post.objects.get(pk=post_id)
     post.comment_set.create(
-        body=request.POST["comment_body"], user_id=request.POST["comment_user_id"]
+        body=request.POST["comment_body"], user_id=request.current_user
     )
     return redirect(reverse("show_post", args=[post.id]))
