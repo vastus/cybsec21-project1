@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponseForbidden
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
@@ -84,7 +84,9 @@ def profile(request: HttpRequest, user_id: int):
         user = User.objects.get(pk=user_id)
         return _render(request, "blog/profile.html", {'user': user})
     form = ProfileForm(request.POST)
-    user = User.objects.get(pk=user_id)
+    user = request.current_user
+    if user_id != user.id:
+        return HttpResponseForbidden()
     if form.is_valid():
         user.email = form.cleaned_data['email']
         user.save()
