@@ -22,7 +22,12 @@
 
       <div class="field">
         <label for="login__email">Email</label><br />
-        <input id="login__email" name="login_email" type="email" />
+        <input
+          id="login__email"
+          name="login_email"
+          type="email"
+          value="{{ request.POST.login_email }}"
+        />
       </div>
 
       <div class="field">

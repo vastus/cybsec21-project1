@@ -13,9 +13,9 @@ class Command(BaseCommand):
     help = "Seed the DB"
 
     def handle(self, *args, **options):
-        admin_email = "admin@local"
-        author_email = "jo@nesbo"
-        testos_email = "testos@teroni"
+        admin_email = "admin@lo.co"
+        author_email = "jo@nes.bo"
+        testos_email = "testos@teroni.fi"
 
         users = (
             ("sudo", admin_email, "AdminPass99"),

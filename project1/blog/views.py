@@ -4,15 +4,12 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
-from .models import Post, PostForm, User
+from .models import Post, PostForm, User, ProfileForm
 
 CURRENT_USER_ID = "current_user_id"
 
 
 def _render(request: HttpRequest, templ: str, context: dict = {}):
-    # current_user_id = request.session.get(CURRENT_USER_ID)
-    # if current_user_id:
-    #     request.current_user = User.objects.get(pk=current_user_id)
     return render(request, templ, context)
 
 
@@ -81,6 +78,21 @@ def _handle_registration(request: HttpRequest):
     return _render(request, "blog/register.html", context)
 
 
+@require_http_methods(["GET", "POST"])
+def profile(request: HttpRequest, user_id: int):
+    if request.method == 'GET':
+        user = User.objects.get(pk=user_id)
+        return _render(request, "blog/profile.html", {'user': user})
+    form = ProfileForm(request.POST)
+    user = User.objects.get(pk=user_id)
+    if form.is_valid():
+        user.email = form.cleaned_data['email']
+        user.save()
+        return redirect(reverse("profile", args=[user.id]))
+    messages.error(request, form.errors)
+    return _render(request, "blog/profile.html", {'user': user})
+
+
 @require_http_methods(["GET"])
 def new_post(request: HttpRequest):
     if not request.current_user:
@@ -92,7 +104,6 @@ def new_post(request: HttpRequest):
 def create_post(request: HttpRequest):
     title = request.POST["title"]
     content = request.POST["content"]
-    # import pdb; pdb.set_trace()
     form = PostForm({"title": title, "content": content, "user": request.current_user})
     if form.is_valid():
         post = form.save()

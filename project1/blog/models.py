@@ -4,7 +4,8 @@ import os
 from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator
 from django.db import models
-from django.forms import ModelForm
+from django.forms import Form, ModelForm
+from django import forms
 
 AUTHOR = 0b0010
 ADMIN = 0b1111
@@ -15,11 +16,11 @@ def encrypt_password(password: str, salt: bytes):
 
 
 class User(models.Model):
-    username = models.CharField(max_length=64)
-    email = models.CharField(max_length=256)
+    username = models.CharField(max_length=64, null=False, blank=False)
+    email = models.EmailField(unique=True)
     role = models.PositiveIntegerField(null=False, default=0)
-    password_hash = models.BinaryField(null=False)
-    password_salt = models.BinaryField(null=False)
+    password_hash = models.BinaryField(null=False, blank=False)
+    password_salt = models.BinaryField(null=False, blank=False)
 
     def to_json(self):
         fields = ("email",)
@@ -31,7 +32,6 @@ class User(models.Model):
 
     @classmethod
     def authenticate(cls, email, password):
-        # import pdb; pdb.set_trace()
         user = cls.objects.filter(email=email).first()
         if not user:
             return None, "incorrect email and/or password"
@@ -87,3 +87,18 @@ class Comment(models.Model):
 
     inserted_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+class ProfileForm(forms.ModelForm):
+    email_confirmation = forms.EmailField()
+
+    class Meta:
+        model = User
+        fields = ["email"]
+
+    def clean(self):
+        data = super().clean()
+        email = data.get('email')
+        email_confirmation = data.get('email_confirmation')
+        if email != email_confirmation:
+            raise ValidationError("Email and email confirmation must match", code="mismatch")

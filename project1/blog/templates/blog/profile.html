@@ -1,0 +1,57 @@
+{% extends "blog/layout.html" %}
+
+{% block content %}
+<div>
+  <h1>Profile</h1>
+
+  <div class="profile">
+    <h2>{{ user.username }}</h2>
+
+    <p>
+    Has {{ user.comment_set.count }} comment(s).
+    </p>
+  </div>
+
+  {% if user.id == current_user.id %}
+  <div>
+    <h2>Edit Profile</h2>
+
+    {% if messages %}
+      <h2>Errors</h2>
+      {% for message in messages %}
+        {{ message|capfirst }}
+      {% endfor %}
+    {% endif %}
+
+    <fieldset>
+      <legend>Make changes to your profile</legend>
+      <form method="POST" action="{% url 'profile' user_id=current_user.id %}">
+        {% csrf_token %}
+
+        <div class="field">
+          <label for="profile__email">Email</label><br />
+          <input
+              id="profile__email"
+              name="email"
+              type="email"
+              />
+        </div>
+
+        <div class="field">
+          <label for="profile__email_confirmation">Confirm Email</label><br />
+          <input
+              id="profile__email_confirmation"
+              name="email_confirmation"
+              type="email"
+              />
+        </div>
+
+        <div>
+          <input type="submit" value="Change" />
+        </div>
+      </form>
+    </fieldset>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
