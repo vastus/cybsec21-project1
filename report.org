@@ -75,3 +75,16 @@ curl 'http://blog/posts/1/comments' \
 First of all the application should figure out the current user from the session instead of getting it from the hidden input field. All user input should be considered unsafe. The way that the comment body is rendered needs to be changed from safe to unsafe, so that the browser doesn't interpret the HTML tags (e.g. <script>).
 
 The fix can be seen in the following commit: https://github.com/vastus/cybsec21-project1/commit/c2e0b18a1357461d6224466c1196e1a4ad9e8438
+
+FLAW 3:
+https://github.com/vastus/cybsec21-project1/blob/4db57645b870df1ff1c2bcc6cf4ca8f53f6668f2/project1/blog/views.py#L87
+
+** Flaw 3: A5:2017-Broken Access Control
+
+It's easy to forget to correctly control the access within different parts of an application. The blog allows users to profiles (/profile/<user_id>). If the current user is viewing their own profile and they're signed in they can change their email address if they so wish. The developers of the blog coded the feature to fetch the updated user record by the user ID that's provided in the URL. This of course is an obvious case of broken access control where any logged in user may change other users information. An attacker might change admin's email address for example and request a new password which would then allow them to log in as the admin user.
+
+** Flaw 3: Fixing the broken access control
+
+To fix this vulnerability we should only allow changes to the current user's profile and not to anyone else's. Instead of updating the user record (identified by the user ID from the URL) we should check that the profile that is updated is only in the scope of the currently signed in user that's identified from the session.
+
+The fix can be seen in the following commit: https://github.com/vastus/cybsec21-project1/commit/f0c639aeca1988f694f0cfa98fa60d1923a4173e
