@@ -98,7 +98,9 @@ class ProfileForm(forms.ModelForm):
 
     def clean(self):
         data = super().clean()
-        email = data.get('email')
-        email_confirmation = data.get('email_confirmation')
+        email = data.get("email")
+        email_confirmation = data.get("email_confirmation")
         if email != email_confirmation:
-            raise ValidationError("Email and email confirmation must match", code="mismatch")
+            raise ValidationError(
+                "Email and email confirmation must match", code="mismatch"
+            )
