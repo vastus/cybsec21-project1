@@ -88,3 +88,18 @@ It's easy to forget to correctly control the access within different parts of an
 To fix this vulnerability we should only allow changes to the current user's profile and not to anyone else's. Instead of updating the user record (identified by the user ID from the URL) we should check that the profile that is updated is only in the scope of the currently signed in user that's identified from the session.
 
 The fix can be seen in the following commit: https://github.com/vastus/cybsec21-project1/commit/f0c639aeca1988f694f0cfa98fa60d1923a4173e
+
+FLAW 4:
+https://github.com/vastus/cybsec21-project1/blob/4db57645b870df1ff1c2bcc6cf4ca8f53f6668f2/project1/blog/models.py#L54
+
+** Flaw 4: A2_2017-Broken_Authentication.html
+
+This flaw showcases broken authentication in terms of password strength. There are many examples where test credentials have been left on production instances, applications allow registration with weak passwords e.g. too short passwords or passwords that are too common that are vulnerable to dictionary attacks. Deciding on what are the characteristics of a strong password and still keep the password choosing somewhat user friendly is hard which is why usually using a password manager is recommended.
+
+Allowing weak passwords leaves the application vulnerable for authentication attacks that attackers can use to gain access to unwanted systems or attackers practicing identity theft.
+
+** Flaw 4: Fixing broken authentication
+
+The fix shown in the commit is far from perfect but it is clearly better than not checking for password weaknesses at all. The blog's registration process now checks a few properties of the password provided to the register procedure: the length has to be at least 12 characters, there has to be enough variance in the used character set that the password is made of, and the password is compared against 10k common passwords. This is by no means an exhaustive list of steps ensuring the provided password isn't weak but it's a good start. Checking the password for weaknesses, as it is implemented in the app, is not too performant either but this essay focuses on security and not on performance thus that aspect of the procedure will be considered out of scope.
+
+The fix can be seen in the following commit: https://github.com/vastus/cybsec21-project1/commit/b08a723eedacd9ded2ae4b017943724b97527b72
