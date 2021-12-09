@@ -7,12 +7,29 @@ from django.db import models
 from django.forms import Form, ModelForm
 from django import forms
 
+PASSWORD_LENGTH_MIN = 12
+WEAK_PASSWORD_FILEPATH = os.path.join(
+    os.path.dirname(__file__), "lib/weak-passwords-10000.txt"
+)
+
 AUTHOR = 0b0010
 ADMIN = 0b1111
 
 
 def encrypt_password(password: str, salt: bytes):
     return hashlib.scrypt(bytes(password, "utf-8"), salt=salt, n=128, r=1024, p=16)
+
+
+def check_password(password: str):
+    print(WEAK_PASSWORD_FILEPATH)
+    if len(password) < PASSWORD_LENGTH_MIN:
+        return False, f"password is too short (< {PASSWORD_LENGTH_MIN})"
+    if len(set(password)) < (PASSWORD_LENGTH_MIN / 4):
+        return False, f"password must have more various characters)"
+    with open(WEAK_PASSWORD_FILEPATH, "r") as f:
+        if any(password == line.strip() for line in f):
+            return False, "password is too common"
+    return True, ""
 
 
 class User(models.Model):
@@ -50,6 +67,9 @@ class User(models.Model):
         user = cls.objects.filter(username=username).first()
         if user:
             return False, "username/email already in use"
+        ok, reason = check_password(password)
+        if not ok:
+            return False, reason
         password_salt = os.urandom(128)
         password_hash = encrypt_password(password, password_salt)
         user = User(
