@@ -103,3 +103,22 @@ Allowing weak passwords leaves the application vulnerable for authentication att
 The fix shown in the commit is far from perfect but it is clearly better than not checking for password weaknesses at all. The blog's registration process now checks a few properties of the password provided to the register procedure: the length has to be at least 12 characters, there has to be enough variance in the used character set that the password is made of, and the password is compared against 10k common passwords. This is by no means an exhaustive list of steps ensuring the provided password isn't weak but it's a good start. Checking the password for weaknesses, as it is implemented in the app, is not too performant either but this essay focuses on security and not on performance thus that aspect of the procedure will be considered out of scope.
 
 The fix can be seen in the following commit: https://github.com/vastus/cybsec21-project1/commit/b08a723eedacd9ded2ae4b017943724b97527b72
+
+FLAW 5:
+https://github.com/vastus/cybsec21-project1/blob/5320b58cee848e9b113c1c682ddf711d0737054c/project1/blog/views.py#L48-L49
+
+** Flaw 5: A10:2017-Insufficient Logging & Monitoring
+
+It is very hard to analyze the usage of an application or service without proper logging and monitoring. Attackers can probe for vulnerabilities and try to penetrate by performing different kinds of high-frequency attacks. It's crucial to have decent logging, monitoring, and alerting. There aren't any logging used in the blog app at the moment. It would be hard to try to analyze the django logs and tell if someone was trying to forcefully authenticate, for example. To further improve the transparency of authentication in the app we should log whenever a user tries to log in to the blog.
+
+** Flaw 5: Adding logs
+
+Let's fix the insufficient logging in the app whenever a user tries to authenticate. Logging authentication can be split into 3 different types: a successful authentication when email/password combination is correct, a failed authentication when an existing user was found with the provided email but the password was incorrect, and lastly failed authentication when no user was found with the given email.
+
+To simplify the fix, logging has been added only to the authentication process but it should be used with at least auditable events, wherever warnings or errors might occur, access control, and server failures.
+
+An example log line of an authentication attempt that failed:
+
+    [WARNING] 2021-12-10 13:00:12 - AUTH FAIL: existing username=sudo ip=13.37.90.01
+
+The fix can be seen in the following commit: https://github.com/vastus/cybsec21-project1/commit/448e79b7a8b9170d1ea7da0e810801718a317e69
