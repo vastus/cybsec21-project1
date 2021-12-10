@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import hashlib
 import os
 
@@ -9,7 +11,6 @@ from django import forms
 
 AUTHOR = 0b0010
 ADMIN = 0b1111
-
 
 def encrypt_password(password: str, salt: bytes):
     return hashlib.scrypt(bytes(password, "utf-8"), salt=salt, n=128, r=1024, p=16)
@@ -31,16 +32,15 @@ class User(models.Model):
         return (self.role & AUTHOR) != 0
 
     @classmethod
-    def authenticate(cls, email, password):
-        user = cls.objects.filter(email=email).first()
+    def authenticate(cls, user: User, password):
         if not user:
-            return None, "incorrect email and/or password"
+            return False, "incorrect email and/or password"
 
         hashed_password = encrypt_password(password, user.password_salt)
         if hashed_password != user.password_hash:
-            return None, "incorrect email and/or password"
+            return False, "incorrect email and/or password"
 
-        return user, ""
+        return True, ""
 
     @classmethod
     def register(cls, username, email, password):

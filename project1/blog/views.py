@@ -1,12 +1,17 @@
+import logging
+
 from django.contrib import messages
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
+from .lib.utils import ip
 from .models import Post, PostForm, User, ProfileForm
 
 CURRENT_USER_ID = "current_user_id"
+
+logger = logging.getLogger(__name__)
 
 
 def _render(request: HttpRequest, templ: str, context: dict = {}):
@@ -41,10 +46,18 @@ def login(request: HttpRequest):
 def _handle_login(request: HttpRequest):
     email = request.POST["login_email"]
     password = request.POST["login_password"]
-    user, failure = User.authenticate(email, password)
-    if user:
+    user = User.objects.filter(email=email).first()
+    ok, failure = User.authenticate(user, password)
+    if ok:
+        logger.info(f"AUTH OK: username={user.username} ip={ip(request)}")
         request.session[CURRENT_USER_ID] = user.id
         return redirect("/")
+
+    if user:
+        logger.warn(f"AUTH FAIL: existing username='{user.username}' ip={ip(request)}")
+    else:
+        logger.warn(f"AUTH FAIL: email={email} ip={ip(request)}")
+
     context = {"failure": failure}
     return _render(request, "blog/login.html", context)
 
@@ -80,17 +93,17 @@ def _handle_registration(request: HttpRequest):
 
 @require_http_methods(["GET", "POST"])
 def profile(request: HttpRequest, user_id: int):
-    if request.method == 'GET':
+    if request.method == "GET":
         user = User.objects.get(pk=user_id)
-        return _render(request, "blog/profile.html", {'user': user})
+        return _render(request, "blog/profile.html", {"user": user})
     form = ProfileForm(request.POST)
     user = User.objects.get(pk=user_id)
     if form.is_valid():
-        user.email = form.cleaned_data['email']
+        user.email = form.cleaned_data["email"]
         user.save()
         return redirect(reverse("profile", args=[user.id]))
     messages.error(request, form.errors)
-    return _render(request, "blog/profile.html", {'user': user})
+    return _render(request, "blog/profile.html", {"user": user})
 
 
 @require_http_methods(["GET"])
